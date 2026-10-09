@@ -1,0 +1,710 @@
+// ==========================================
+// E-Commerce Database
+// Stage 1: Foundation & Users
+// ==========================================
+
+
+// =====================
+// Users
+// =====================
+
+Table users {
+  id integer [pk, increment]
+  first_name varchar
+  last_name varchar
+  mobile varchar [unique]
+  password varchar
+  status varchar
+  mobile_verified_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Roles
+// =====================
+
+Table roles {
+  id integer [pk, increment]
+  name varchar [unique]
+  created_at timestamp
+}
+
+
+// =====================
+// Permissions
+// =====================
+
+Table permissions {
+  id integer [pk, increment]
+  name varchar [unique]
+  created_at timestamp
+}
+
+
+// =====================
+// Role User
+// Many-to-Many
+// =====================
+
+Table role_user {
+  role_id integer [not null]
+  user_id integer [not null]
+
+  indexes {
+    (role_id, user_id) [pk]
+  }
+}
+
+
+// =====================
+// Permission Role
+// Many-to-Many
+// =====================
+
+Table role_permission {
+  
+  role_id integer [not null]
+  permission_id integer [not null]
+
+  indexes {
+    (permission_id, role_id) [pk]
+  }
+}
+
+
+// ==========================================
+// Relationships
+// ==========================================
+
+// User <-> Role
+Ref: role_user.role_id > roles.id
+Ref: role_user.user_id > users.id
+
+// Role <-> Permission
+Ref: role_permission.permission_id > permissions.id
+Ref: role_permission.role_id > roles.id
+
+// ==========================================
+// E-Commerce Database
+// Stage 2: Addresses
+// ==========================================
+
+// ==========================================
+// E-Commerce Database
+// Boutique / Clothing Store
+// Stages 1 - 4
+// ==========================================
+
+
+// =====================
+// Addresses
+// =====================
+
+Table addresses {
+  id integer [pk, increment]
+  user_id integer [not null]
+  title varchar
+  recipient_name varchar
+  mobile varchar
+  province varchar
+  city varchar
+  postal_code varchar
+  address text
+  is_default boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// ==========================================
+// Address Relationships
+// ==========================================
+
+Ref: users.id < addresses.user_id
+
+
+// =====================
+// Categories
+// =====================
+
+Table categories {
+  id integer [pk, increment]
+  parent_id integer
+  name varchar
+  slug varchar [unique]
+  description text
+  image varchar
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Brands
+// =====================
+
+Table brands {
+  id integer [pk, increment]
+  name varchar
+  slug varchar [unique]
+  description text
+  logo varchar
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Products
+// =====================
+
+Table products {
+  id integer [pk, increment]
+  brand_id integer
+  name varchar
+  slug varchar [unique]
+  sku varchar [unique]
+  description text
+  short_description text
+  type varchar
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Product Categories
+// Many-to-Many
+// =====================
+
+Table product_categories {
+  product_id integer [not null]
+  category_id integer [not null]
+
+  indexes {
+    (product_id, category_id) [pk]
+  }
+}
+
+
+// =====================
+// Product Variants
+// =====================
+
+Table product_variants {
+  id integer [pk, increment]
+  product_id integer [not null]
+  sku varchar [unique]
+  price decimal
+  compare_price decimal
+  cost_price decimal
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Product Images
+// =====================
+
+Table product_images {
+  id integer [pk, increment]
+  product_id integer [not null]
+  variant_id integer
+  image varchar
+  sort_order integer
+  is_primary boolean
+  created_at timestamp
+}
+
+
+// =====================
+// Attributes
+// =====================
+
+Table attributes {
+  id integer [pk, increment]
+  name varchar
+  slug varchar [unique]
+  type varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Attribute Values
+// =====================
+
+Table attribute_values {
+  id integer [pk, increment]
+  attribute_id integer [not null]
+  value varchar
+  slug varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+// =====================
+// Product Attributes
+// =====================
+
+Table product_attributes {
+  product_id integer [not null]
+  attribute_id integer [not null]
+  attribute_value_id integer [not null]
+
+  indexes {
+    (product_id, attribute_id, attribute_value_id) [pk]
+  }
+}
+
+
+// =====================
+// Product Variant Values
+// =====================
+
+Table product_variant_values {
+  product_variant_id integer [not null]
+  attribute_value_id integer [not null]
+
+  indexes {
+    (product_variant_id, attribute_value_id) [pk]
+  }
+}
+
+
+// ==========================================
+// Relationships
+// ==========================================
+
+// Categories
+Ref: categories.parent_id > categories.id
+
+// Brand -> Products
+Ref: brands.id < products.brand_id
+
+// Products <-> Categories
+Ref: products.id < product_categories.product_id
+Ref: categories.id < product_categories.category_id
+
+// Product -> Variants
+Ref: products.id < product_variants.product_id
+
+// Product -> Images
+Ref: products.id < product_images.product_id
+
+// Variant -> Images
+Ref: product_variants.id < product_images.variant_id
+
+// Attributes
+Ref: attributes.id < attribute_values.attribute_id
+
+// Product Attributes
+Ref: products.id < product_attributes.product_id
+Ref: attributes.id < product_attributes.attribute_id
+Ref: attribute_values.id < product_attributes.attribute_value_id
+
+// Variant Values
+Ref: product_variants.id < product_variant_values.product_variant_id
+Ref: attribute_values.id < product_variant_values.attribute_value_id
+
+
+// ==========================================
+// E-Commerce Database
+// Stage 5: Inventory
+// Boutique / Clothing Store
+// ==========================================
+
+Table warehouses {
+  id integer [pk, increment]
+  name varchar
+  code varchar [unique]
+  address text
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table inventories {
+  id integer [pk, increment]
+  warehouse_id integer [not null]
+  product_variant_id integer [not null]
+  quantity integer
+  reserved_quantity integer
+  low_stock_threshold integer
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (warehouse_id, product_variant_id) [unique]
+  }
+}
+
+Table inventory_transactions {
+  id integer [pk, increment]
+  inventory_id integer [not null]
+  type varchar
+  quantity integer
+  reference_type varchar
+  reference_id integer
+  note text
+  created_at timestamp
+}
+
+Ref: warehouses.id < inventories.warehouse_id
+Ref: product_variants.id < inventories.product_variant_id
+Ref: inventories.id < inventory_transactions.inventory_id 
+
+// ==========================================
+// E-Commerce Database
+// Stage 6: Cart & Wishlist
+// Boutique / Clothing Store
+// ==========================================
+
+Table carts {
+  id integer [pk, increment]
+  user_id integer [not null]
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table cart_items {
+  id integer [pk, increment]
+  cart_id integer [not null]
+  product_variant_id integer [not null]
+  quantity integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table wishlists {
+  id integer [pk, increment]
+  name varchar
+  user_id integer [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table wishlist_items {
+  id integer [pk, increment]
+  wishlist_id integer [not null]
+  product_id integer [not null]
+  created_at timestamp
+}
+
+Ref: users.id < carts.user_id
+Ref: carts.id < cart_items.cart_id
+Ref: product_variants.id < cart_items.product_variant_id
+
+Ref: users.id < wishlists.user_id
+Ref: wishlists.id < wishlist_items.wishlist_id
+Ref: products.id < wishlist_items.product_id 
+
+// ==========================================
+// E-Commerce Database
+// Stage 7: Orders
+// Boutique / Clothing Store
+// ==========================================
+
+Table orders {
+  id integer [pk, increment]
+  user_id integer [not null]
+  address_id integer
+  order_number varchar [unique]
+  status varchar
+  subtotal decimal
+  discount_amount decimal
+  shipping_amount decimal
+  total_amount decimal
+  customer_note text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table order_items {
+  id integer [pk, increment]
+  order_id integer [not null]
+  product_variant_id integer
+  product_name varchar
+  variant_name varchar
+  sku varchar
+  quantity integer
+  unit_price decimal
+  total_price decimal
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table order_status_histories {
+  id integer [pk, increment]
+  order_id integer [not null]
+  status varchar
+  note text
+  created_at timestamp
+}
+
+Ref: users.id < orders.user_id
+Ref: addresses.id < orders.address_id
+Ref: orders.id < order_items.order_id
+Ref: product_variants.id < order_items.product_variant_id
+Ref: orders.id < order_status_histories.order_id 
+
+// ==========================================
+// E-Commerce Database
+// Stage 8: Payments & Wallet
+// Boutique / Clothing Store
+// ==========================================
+
+Table payments {
+  id integer [pk, increment]
+  order_id integer [not null]
+  amount decimal [not null]
+  method varchar
+  status varchar
+  transaction_id varchar
+  gateway varchar
+  paid_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table wallets {
+  id integer [pk, increment]
+  user_id integer [not null, unique]
+  balance decimal
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table wallet_transactions {
+  id integer [pk, increment]
+  wallet_id integer [not null]
+  type varchar
+  direction varchar
+  amount decimal
+  balance_before decimal
+  balance_after decimal
+  reference_type varchar
+  reference_id integer
+  description text
+  created_at timestamp
+}
+
+Ref: orders.id < payments.order_id
+Ref: users.id - wallets.user_id
+Ref: wallets.id < wallet_transactions.wallet_id
+
+// ==========================================
+// E-Commerce Database
+// Stage 9: Shipping
+// Boutique / Clothing Store
+// ==========================================
+
+Table shipping_methods {
+  id integer [pk, increment]
+  name varchar
+  code varchar [unique]
+  description text
+  base_cost decimal
+  estimated_days integer
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shipments {
+  id integer [pk, increment]
+  order_id integer [not null]
+  shipping_method_id integer
+  address_id integer
+  tracking_number varchar
+  status varchar
+  shipping_cost decimal
+  shipped_at timestamp
+  delivered_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table shipment_status_histories {
+  id integer [pk, increment]
+  shipment_id integer [not null]
+  status varchar
+  note text
+  created_at timestamp
+}
+
+Ref: shipping_methods.id < shipments.shipping_method_id
+Ref: orders.id < shipments.order_id
+Ref: addresses.id < shipments.address_id
+Ref: shipments.id < shipment_status_histories.shipment_id
+
+
+// ==========================================
+// E-Commerce Database
+// Stage 10: Discounts & Marketing
+// Boutique / Clothing Store
+// ==========================================
+
+Table discount_campaigns {
+  id integer [pk, increment]
+  name varchar
+  description text
+  type varchar
+  status varchar
+  starts_at timestamp
+  ends_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table discount_codes {
+  id integer [pk, increment]
+  campaign_id integer
+  code varchar [unique]
+  type varchar
+  value decimal
+  min_order_amount decimal
+  max_discount_amount decimal
+  usage_limit integer
+  usage_limit_per_user integer
+  used_count integer
+  starts_at timestamp
+  ends_at timestamp
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table discount_code_products {
+  discount_code_id integer [not null]
+  product_id integer [not null]
+  indexes {
+    (discount_code_id, product_id) [pk]
+  }
+}
+
+Table discount_code_categories {
+  discount_code_id integer [not null]
+  category_id integer [not null]
+  indexes {
+    (discount_code_id, category_id) [pk]
+  }
+}
+
+Table discount_usages {
+  id integer [pk, increment]
+  discount_code_id integer [not null]
+  user_id integer [not null]
+  order_id integer [not null]
+  discount_amount decimal
+  used_at timestamp
+}
+
+Ref: discount_campaigns.id < discount_codes.campaign_id
+
+Ref: discount_codes.id < discount_code_products.discount_code_id
+Ref: products.id < discount_code_products.product_id
+
+Ref: discount_codes.id < discount_code_categories.discount_code_id
+Ref: categories.id < discount_code_categories.category_id
+
+Ref: discount_codes.id < discount_usages.discount_code_id
+Ref: users.id < discount_usages.user_id
+Ref: orders.id < discount_usages.order_id 
+
+// ==========================================
+// E-Commerce Database
+// Stage 11: Reviews & Product Interaction
+// Boutique / Clothing Store
+// ==========================================
+
+Table product_reviews {
+  id integer [pk, increment]
+  user_id integer [not null]
+  product_id integer [not null]
+  order_item_id integer
+  rating integer [not null]
+  title varchar
+  comment text
+  status varchar
+  is_verified_purchase boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table product_review_images {
+  id integer [pk, increment]
+  review_id integer [not null]
+  image varchar
+  sort_order integer
+  created_at timestamp
+}
+
+Table product_review_votes {
+  id integer [pk, increment]
+  review_id integer [not null]
+  user_id integer [not null]
+  vote varchar
+  created_at timestamp
+
+  indexes {
+    (review_id, user_id) [unique]
+  }
+}
+
+Table product_questions {
+  id integer [pk, increment]
+  user_id integer [not null]
+  product_id integer [not null]
+  question text
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table product_answers {
+  id integer [pk, increment]
+  question_id integer [not null]
+  user_id integer [not null]
+  answer text
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table product_views {
+  id integer [pk, increment]
+  user_id integer
+  product_id integer [not null]
+  session_id varchar
+  created_at timestamp
+}
+
+Ref: users.id < product_reviews.user_id
+Ref: products.id < product_reviews.product_id
+Ref: order_items.id < product_reviews.order_item_id
+
+Ref: product_reviews.id < product_review_images.review_id
+
+Ref: product_reviews.id < product_review_votes.review_id
+Ref: users.id < product_review_votes.user_id
+
+Ref: users.id < product_questions.user_id
+Ref: products.id < product_questions.product_id
+
+Ref: product_questions.id < product_answers.question_id
+Ref: users.id < product_answers.user_id
+
+Ref: users.id < product_views.user_id
+Ref: products.id < product_views.product_id
